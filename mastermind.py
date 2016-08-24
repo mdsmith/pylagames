@@ -3,37 +3,39 @@
 import argparse
 import random
 
+def random_secret():
+  return [random.randint(1, 6) for _ in range(4)]
+
 class MastermindPlayer(object):
 
   def __init__(self):
-    pass
+    self.prompt = "Guess : "
 
   def move(self):
     pass
 
   def update(self, outcome):
     pass
+
+class MastermindRandomPlayer(MastermindPlayer):
+
+  def move(self):
+    move = random_secret()
+    print(self.prompt + ', '.join(map(str, move)))
+    return move
 
 class MastermindHumanPlayer(MastermindPlayer):
 
-  def __init__(self):
-    pass
-
   def move(self):
-    pass
-
-  def update(self, outcome):
-    pass
-
-def random_secret():
-  return [random.randint(1, 6) for _ in range(4)]
+    return list(map(lambda x: int(x.strip()), input(self.prompt).split(',')))
 
 def format_row(row):
   return ', '.join(map(str, row))
 
 class Mastermind(object):
 
-  def __init__(self):
+  def __init__(self, player):
+    self.player = player
     self.print_header()
     self.secret = random_secret()
     self.finished = False
@@ -45,10 +47,14 @@ class Mastermind(object):
     print("        X, X, X, X")
 
   def update_board(self, guess):
-    print(format_row(self.grade_guess(guess)))
+    grade = self.grade_guess(guess)
+    print(format_row(grade))
+    self.player.update(grade)
 
   def get_guess(self):
-    return list(map(lambda x: int(x.strip()), input("Guess : ").split(',')))
+    #return list(map(lambda x: int(x.strip()), input("Guess : ").split(',')))
+    move = self.player.move()
+    return move
 
   def print_win(self):
     print("Congratulations, you won!")
@@ -101,7 +107,10 @@ if __name__ == "__main__":
   pad = parser.add_argument
   pad('--ai', default=False, action='store_true')
   args = parser.parse_args()
-  mastermind = Mastermind()
+  player = MastermindHumanPlayer()
+  if args.ai:
+    player = MastermindRandomPlayer()
+  mastermind = Mastermind(player)
   try:
     play(mastermind)
   except KeyboardInterrupt:
